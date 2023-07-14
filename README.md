@@ -20,31 +20,15 @@
     $ pip install pyk4a
 
   ### 2) Download git:
-    $ git clone https://github.com/UnstructuredWork/udp_client.git
-  
-  ### 3) Check the config file:
-     > ./config/config.yaml
-     ------------------------
-        resolution: "1080"          # ["4K", "1080", "720"]
-        fps: 60
-        format: "YUYV"              # ["NV12", "YUYV"]
-        subsystem: "video4linux"    
-        show_fps: False             # True or False              
-        
-        l_serial: LEFT_CAMERA_SERIAL_NUMBER
-        r_serial: RIGHT_CAMERA_SERIAL_NUMBER
-     
-  ### 4) Run
-  ##### Create files('xx.avi', 'xx.h5', 'xx.csv') to add in the folder 'src/data'
-    $ python make_file.py
+    $ git clone https://github.com/UnstructuredWork/udp_client_new.git
 
-  ##### modify 'HOST' and 'PORT' before using
+  ### 3) Run
     $ python main.py
  
-  ### 5) Synchronize time
+  ### 4) Synchronize time
   ##### [doc/time_synchronization.pptx](doc/time_synchronization.pptx)
 
-  ### 6) Check time synchronization
+  ### 5) Check time synchronization
     > python test/sync.py
     ------------------------
       NTP Server Time과 Local Time과 차이는 -1.36 ms입니다.
