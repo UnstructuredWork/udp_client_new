@@ -1,0 +1,45 @@
+SYSTEM:
+  LOG:
+    SHOW: True
+    SAVE: False
+    PRINT_PERIOD: 10
+
+SERVER:
+  CLOUD:
+    HOST: ['10.252.101.175', '10.252.101.183']
+    PORT:
+      STEREO_L: 5001
+      STEREO_R: 5002
+      RGBD: 5003
+      DETECTION: 5051
+      MONO_DEPTH: 5052
+    SIZE:
+      STEREO_L: [ 1920, 1080 ]
+      STEREO_R: [ 1920, 1080 ]
+      RGBD: [ 540, 360 ]
+      DETECTION: [ 540, 360 ]
+      MONO_DEPTH: [ 540, 360 ]
+    SEND: False
+
+  UNITY:
+    HOST: ['10.252.101.139']
+    PORT:
+      STEREO_L: 5001
+      STEREO_R: 5002
+      RGBD: 5003
+      DETECTION: 5051
+      MONO_DEPTH: 5052
+    SIZE:
+      STEREO_L: [ 540, 360 ]
+      STEREO_R: [ 540, 360 ]
+      RGBD: [ 540, 360 ]
+      DETECTION: [ 540, 360 ]
+      MONO_DEPTH: [ 540, 360 ]
+    SEND: True
+
+SW_INFO:
+  STEREO_L: True
+  STEREO_R: True
+  RGBD: True
+  DETECTION: True
+  MONO_DEPTH: True
