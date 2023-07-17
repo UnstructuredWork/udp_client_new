@@ -27,7 +27,7 @@ class Package:
         self.header = None
 
 class Client:
-    def __init__(self, cfg, side):
+    def __init__(self, cfg, meta, side):
         self.sock = None
         self.sock_udp()
 
@@ -38,26 +38,24 @@ class Client:
         self.prev_time = 0
         self.curr_time = 0
 
-        self.frame_duration = 1 / 60
-
         self.MAX_IMAGE_DGRAM = 2 ** 16 - 256
 
         self.cfg = cfg
 
         self.side = side
 
-        if subprocess.check_output(["nvcc", "-V"]):
+        if subprocess.check_output(['nvidia-smi']):
             self.comp = NvJpeg()
         else:
             self.comp = TurboJPEG()
 
         if cfg.CLOUD.SEND:
-            self.pack_cloud = Package(self.cfg.CLOUD, self.side)
+            self.pack_cloud = Package(self.cfg.CLOUD, side)
         else:
             self.pack_cloud = None
 
         if cfg.UNITY.SEND:
-            self.pack_unity = Package(self.cfg.UNITY, self.side)
+            self.pack_unity = Package(self.cfg.UNITY, side)
         else:
             self.pack_unity = None
 
@@ -81,6 +79,7 @@ class Client:
             packet_num = (str(self.img_num).zfill(3) + '-' +
                           str(total_count) + '-' +
                           str(total_count - count + 1)).encode('utf-8')
+
             try:
                 if package.imu is None:
                     self.sock.sendto(struct.pack("B", count) + b'end' +

@@ -26,12 +26,13 @@ class LogPrinter:
                 self.print_cycle = self.cfg.SYSTEM.LOG.PRINT_PERIOD
 
             logger.info(
-                f"Sync server conn: {data['CONNECT'].value}. Latency: {data['LATENCY'].value:.2f} ms"
+                f"Sync server conn: {data['CONNECT'].value}. Sync latency: {data['LATENCY'].value:.2f} ms"
             )
 
             for k, v in data.items():
                 if k in ['STEREO_L', 'STEREO_R', 'RGBD']:
-                    logger.info(f"{k:<10} - RUN: {v['run'].value}. FPS: {int(v['fps'].value):>2}. Latency: {v['lat'].value:.2f} ms")
+                    logger.info(f"{k:<8} - RUN: {bool(v['run'].value)}. "
+                                f"Send: {bool(v['send'].value)}. FPS: {int(v['fps'].value):>2}.")
 
         else:
             self.server_conn = False

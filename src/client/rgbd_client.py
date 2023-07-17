@@ -1,27 +1,25 @@
 import cv2
 import zlib
 import struct
-import pickle
 
 from .client import Client
 from datetime import datetime
 from src.parallel import thread_method
-import time
-class SingleDataClient(Client):
-    def __init__(self, cfg, side):
-        super().__init__(cfg, side)
-        self.data = None
+
+class RgbdClient(Client):
+    def __init__(self, cfg, meta, side):
+        super().__init__(cfg, meta, side)
+        self.imu   = None
+        self.rgb   = None
+        self.depth = None
 
     def bytescode(self, package):
-        data = self.data
+        rgb = self.rgb
+        depth = self.depth
         package.get_img_time = datetime.now().time().isoformat().encode('utf-8')
-        if self.side == 'STEREO_L' or self.side == 'STEREO_R':
-            package.frame = self.comp.encode(self.resize(data, package), 40)
-        elif self.side == 'DETECTION':
-            package.frame = zlib.compress(pickle.dumps(data))
-        elif self.side == 'MONO_DEPTH':
-            package.frame = cv2.imencode('.png', self.resize(data, package), [cv2.IMWRITE_PNG_COMPRESSION, 4])[1].tobytes()
-
+        package.imu = self.imu
+        package.frame = self.comp.encode(self.resize(rgb, package), 40) + b'frame' + \
+                        cv2.imencode('.png', self.resize(depth, package), [cv2.IMWRITE_PNG_COMPRESSION, 4])[1].tobytes()
         check = zlib.crc32(package.frame)
         if self.duplicate_check != check:
             self.duplicate_check = check
@@ -30,7 +28,9 @@ class SingleDataClient(Client):
 
     @thread_method
     def run(self, data):
-        self.data = data
+        self.imu = data["imu"]
+        self.rgb = data["rgb"]
+        self.depth = data["depth"]
         if self.pack_cloud is not None:
             self.bytescode(self.pack_cloud)
 
