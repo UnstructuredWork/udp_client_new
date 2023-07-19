@@ -86,9 +86,11 @@ class RgbdStreamer:
     def imu_update(self):
         while True:
             if self.started:
-                acc_xyz = self.k4a.get_imu_sample().pop("acc_sample")
-                gyro_xyz = self.k4a.get_imu_sample().pop("gyro_sample")
-                self.result["imu"] = pickle.dumps([acc_xyz, gyro_xyz])
+                imu = []
+                imu.extend(self.k4a.get_imu_sample().pop("acc_sample"))
+                imu.extend(self.k4a.get_imu_sample().pop("gyro_sample"))
+
+                self.result["imu"] = pickle.dumps(imu)
 
     @thread_method
     def frame_update(self):
