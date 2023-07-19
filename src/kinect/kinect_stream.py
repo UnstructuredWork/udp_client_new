@@ -41,7 +41,8 @@ class RgbdStreamer:
 
         self.result = {"imu": None,
                        "rgb": None,
-                       "depth": None}
+                       "depth": None,
+                       "intrinsic": None}
 
         self.current_time = time.time()
         self.preview_time = time.time()
@@ -63,6 +64,7 @@ class RgbdStreamer:
         assert self.k4a.whitebalance == 4500
         self.k4a.whitebalance = 4510
         assert self.k4a.whitebalance == 4510
+        self.result["intrinsic"] = self.k4a.calibration.get_camera_matrix(pyk4a.CalibrationType.COLOR).tobytes()
 
     def run(self):
         self.imu_update()
