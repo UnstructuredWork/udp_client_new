@@ -13,7 +13,7 @@
   ### 1) Make virtual environment & install dependencies :
     $ conda create -n UDP python=3.7
     $ conda activate UDP
-    $ pip install opencv-python==4.6.0.66 opencv-contrib-python==4.6.0.66 numpy pyudev pyyaml ntplib 
+    $ pip install opencv-python==4.6.0.66 opencv-contrib-python==4.6.0.66 numpy pyudev pyyaml ntplib fvcore
     $ pip install pynvjpeg h5py
     $ sudo apt-get update
     $ sudo apt-get install libturbojpeg
