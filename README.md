@@ -8,7 +8,7 @@
 ## 2. Use
 
   ### 0) Install Azure Kinect Camera SDK
-    Reference: https://gist.github.com/madelinegannon/c212dbf24fc42c1f36776342754d81bc
+  Reference: https://gist.github.com/madelinegannon/c212dbf24fc42c1f36776342754d81bc
 
   ### 1) Make virtual environment & install dependencies :
     $ conda create -n UDP python=3.7
