@@ -19,7 +19,7 @@ class Package:
         self.port = getattr(self.cfg.PORT, self.side)
         self.size = getattr(self.cfg.SIZE, self.side)
 
-        self.imu = None
+        self.cam_info = None
 
         self.frame = None
         self.get_img_time = None
@@ -27,7 +27,7 @@ class Package:
         self.header = None
 
 class Client:
-    def __init__(self, cfg, side):
+    def __init__(self, cfg, meta, side):
         self.sock = None
         self.sock_udp()
 
@@ -38,26 +38,24 @@ class Client:
         self.prev_time = 0
         self.curr_time = 0
 
-        self.frame_duration = 1 / 60
-
         self.MAX_IMAGE_DGRAM = 2 ** 16 - 256
 
         self.cfg = cfg
 
         self.side = side
 
-        if subprocess.check_output(["nvcc", "-V"]):
+        if subprocess.check_output(['nvidia-smi']):
             self.comp = NvJpeg()
         else:
             self.comp = TurboJPEG()
 
         if cfg.CLOUD.SEND:
-            self.pack_cloud = Package(self.cfg.CLOUD, self.side)
+            self.pack_cloud = Package(self.cfg.CLOUD, side)
         else:
             self.pack_cloud = None
 
         if cfg.UNITY.SEND:
-            self.pack_unity = Package(self.cfg.UNITY, self.side)
+            self.pack_unity = Package(self.cfg.UNITY, side)
         else:
             self.pack_unity = None
 
@@ -81,8 +79,9 @@ class Client:
             packet_num = (str(self.img_num).zfill(3) + '-' +
                           str(total_count) + '-' +
                           str(total_count - count + 1)).encode('utf-8')
+
             try:
-                if package.imu is None:
+                if package.cam_info is None:
                     self.sock.sendto(struct.pack("B", count) + b'end' +
                                      package.header + b'end' +
                                      packet_num + b'end' +
@@ -97,7 +96,7 @@ class Client:
                                      package.get_img_time + b'end' +
                                      str(len(package.frame)).encode('utf-8') + b'end' +
                                      str(array_pos_start).encode('utf-8') + b'end' +
-                                     package.imu + b'end' +
+                                     package.cam_info + b'end' +
                                      package.frame[array_pos_start:array_pos_end], (package.host[0], package.port))
             except OSError:
                 pass

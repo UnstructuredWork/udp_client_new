@@ -1,4 +1,3 @@
-import cv2
 import zlib
 import struct
 
@@ -6,21 +5,15 @@ from .client import Client
 from datetime import datetime
 from src.parallel import thread_method
 
-class MultipleDataClient(Client):
-    def __init__(self, cfg, side):
-        super().__init__(cfg, side)
-        self.imu   = None
-        self.rgb   = None
-        self.depth = None
+class StereoClient(Client):
+    def __init__(self, cfg, meta, side):
+        super().__init__(cfg, meta, side)
+        self.rgb = None
 
     def bytescode(self, package):
         rgb = self.rgb
-        depth = self.depth
         package.get_img_time = datetime.now().time().isoformat().encode('utf-8')
-        package.imu = self.imu
-        package.frame = self.comp.encode(self.resize(rgb, package), 40) + b'frame' + \
-                        cv2.imencode('.png', self.resize(depth, package), [cv2.IMWRITE_PNG_COMPRESSION, 4])[1].tobytes()
-
+        package.frame = self.comp.encode(self.resize(rgb, package), 40)
         check = zlib.crc32(package.frame)
         if self.duplicate_check != check:
             self.duplicate_check = check
@@ -29,9 +22,7 @@ class MultipleDataClient(Client):
 
     @thread_method
     def run(self, data):
-        self.imu = data["imu"]
-        self.rgb = data["rgb"]
-        self.depth = data["depth"]
+        self.rgb = data
         if self.pack_cloud is not None:
             self.bytescode(self.pack_cloud)
 
