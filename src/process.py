@@ -50,6 +50,10 @@ def stream_kinect(cfg, meta, side):
             except Exception as e:
                 logger.error(f"Can't open the [{side}] camera: {e}")
 
+        meta[side]['send'].value = False
+
+        time.sleep(1)
+
 def monitor(cfg, meta):
     m = LogPrinter(cfg)
 
