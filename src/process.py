@@ -68,14 +68,15 @@ def stream_kinect(cfg, meta, side):
 
                     # if r.result["depth"] is not None:
                     #     meta[side]['run'].value = True
-                        # meta[side]['fps'].value = r.fps()
-                        # c.run(r.result)
-                        # meta[side]['send'].value = True
+                    #     meta[side]['fps'].value = r.fps()
+                    #     c.run(r.result)
+                    #     meta[side]['send'].value = True
 
             except Exception as e:
                 logger.error(f"Can't open the [{side}] camera: {e}")
 
         meta[side]['send'].value = False
+        meta[side]['fps'].value = 0
 
         time.sleep(1)
 
