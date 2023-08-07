@@ -5,25 +5,13 @@ SYSTEM:
     PRINT_PERIOD: 10
 
   SYNC:
-    SERVER: 10.252.101.139
+    SERVER: 10.252.101.111
     RESTART: True
     TOLERANCE: 2
 
 SERVER:
   CLOUD:
-    HOST: ['10.252.101.92']
-    PORT:
-      STEREO_L: 5001
-      STEREO_R: 5002
-      RGBD: 5003
-    SIZE:
-      STEREO_L: [ 540, 360 ]
-      STEREO_R: [ 540, 360 ]
-      RGBD: [ 540, 360 ]
-    SEND: False
-
-  UNITY:
-    HOST: ['10.252.101.139']
+    HOST: ['10.252.101.175']
     PORT:
       STEREO_L: 5001
       STEREO_R: 5002
@@ -34,11 +22,23 @@ SERVER:
       RGBD: [ 540, 360 ]
     SEND: True
 
+  UNITY:
+    HOST: ['10.252.101.111']
+    PORT:
+      STEREO_L: 5001
+      STEREO_R: 5002
+      RGBD: 5003
+    SIZE:
+      STEREO_L: [ 540, 360 ]
+      STEREO_R: [ 540, 360 ]
+      RGBD: [ 540, 360 ]
+    SEND: False
+
 HW_INFO:
   STEREO_L:   # Left Sony camera
     TYPE: sony
     SIZE: [1920, 1080]
-    USE: True
+    USE: False
     FPS: 60
     SERIAL: "5311372000050"
     FORMAT: YUYV
@@ -46,7 +46,7 @@ HW_INFO:
   STEREO_R:   # Right Sony camera
     TYPE: sony
     SIZE: [1920, 1080]
-    USE: True
+    USE: False
     FPS: 60
     SERIAL: "5311372000739"
     FORMAT: YUYV
@@ -54,4 +54,4 @@ HW_INFO:
     TYPE: kinect
     SIZE: [1280, 720]
     USE: True
-    FPS: 30
+    FPS: "30"

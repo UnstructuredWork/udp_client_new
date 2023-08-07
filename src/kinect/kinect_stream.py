@@ -4,9 +4,10 @@ import pickle
 import subprocess
 
 from src.parallel import thread_method
+from kinect import Kinect
 
-import pyk4a
-from pyk4a import Config, PyK4A
+# import pyk4a
+# from pyk4a import Config, PyK4A
 from nvjpeg import NvJpeg
 from turbojpeg import TurboJPEG
 
@@ -20,24 +21,26 @@ class RgbdStreamer:
 
         self.cfg = cfg
 
-        self.fps_list = {"30": pyk4a.FPS.FPS_30,
-                         "15": pyk4a.FPS.FPS_30,
-                         "5": pyk4a.FPS.FPS_30}
+        # self.fps_list = {"30": pyk4a.FPS.FPS_30,
+        #                  "15": pyk4a.FPS.FPS_30,
+        #                  "5": pyk4a.FPS.FPS_30}
+        #
+        # self.resolution_list = {"3072": pyk4a.ColorResolution.RES_3072P,
+        #                         "2160": pyk4a.ColorResolution.RES_2160P,
+        #                         "1536": pyk4a.ColorResolution.RES_1536P,
+        #                         "1440": pyk4a.ColorResolution.RES_1440P,
+        #                         "1080": pyk4a.ColorResolution.RES_1080P,
+        #                         "720": pyk4a.ColorResolution.RES_720P}
 
-        self.resolution_list = {"3072": pyk4a.ColorResolution.RES_3072P,
-                                "2160": pyk4a.ColorResolution.RES_2160P,
-                                "1536": pyk4a.ColorResolution.RES_1536P,
-                                "1440": pyk4a.ColorResolution.RES_1440P,
-                                "1080": pyk4a.ColorResolution.RES_1080P,
-                                "720": pyk4a.ColorResolution.RES_720P}
+        # self.k4a = PyK4A(
+        #     Config(
+        #         color_resolution=self.resolution_list[str(self.cfg.SIZE[1])],
+        #         depth_mode=pyk4a.DepthMode.WFOV_2X2BINNED,
+        #         camera_fps=self.fps_list[str(self.cfg.FPS)]
+        #     )
+        # )
 
-        self.k4a = PyK4A(
-            Config(
-                color_resolution=self.resolution_list[str(self.cfg.SIZE[1])],
-                depth_mode=pyk4a.DepthMode.WFOV_2X2BINNED,
-                camera_fps=self.fps_list[str(self.cfg.FPS)]
-            )
-        )
+        self.k4a = Kinect()
 
         self.result = {"imu": None,
                        "rgb": None,
@@ -59,15 +62,20 @@ class RgbdStreamer:
         self.started  = False
 
     def set(self):
-        self.k4a.start()
-        self.k4a.whitebalance = 4500
-        assert self.k4a.whitebalance == 4500
-        self.k4a.whitebalance = 4510
-        assert self.k4a.whitebalance == 4510
-        self.result["intrinsic"] = self.k4a.calibration.get_camera_matrix(pyk4a.CalibrationType.COLOR).tobytes()
+        # self.k4a.start()
+        self.k4a.start(size=self.cfg.SIZE[1])
+        _ = self.k4a.get_data()
+        # self.k4a.whitebalance = 4500
+        # assert self.k4a.whitebalance == 4500
+        # self.k4a.whitebalance = 4510
+        # assert self.k4a.whitebalance == 4510
+        # self.result["intrinsic"] = self.k4a.calibration.get_camera_matrix(pyk4a.CalibrationType.COLOR).tobytes()
+
+        self.result["intrinsic"] = self.k4a.intrinsic_color.tobytes()
+
 
     def run(self):
-        self.imu_update()
+        # self.imu_update()
         self.frame_update()
 
         self.started = True
@@ -77,28 +85,40 @@ class RgbdStreamer:
     def stop(self):
         self.started = False
 
-        self.k4a._stop_imu()
-        self.k4a.stop()
+        # self.k4a._stop_imu()
+        # self.k4a.stop()
 
         print("[INFO] Kinect stopped.")
 
-    @thread_method
-    def imu_update(self):
-        while True:
-            if self.started:
-                imu = []
-                imu.extend(self.k4a.get_imu_sample().pop("acc_sample"))
-                imu.extend(self.k4a.get_imu_sample().pop("gyro_sample"))
-
-                self.result["imu"] = pickle.dumps(imu)
+    # @thread_method
+    # def imu_update(self):
+    #     while True:
+    #         if self.started:
+    #             imu = []
+    #             imu.extend(self.k4a.get_imu_sample().pop("acc_sample"))
+    #             imu.extend(self.k4a.get_imu_sample().pop("gyro_sample"))
+    #
+    #             self.result["imu"] = pickle.dumps(imu)
 
     @thread_method
     def frame_update(self):
         while True:
             if self.started:
-                self.result["rgb"] = self.k4a.get_capture().color[:, :, :3]
-                self.result["depth"] = self.k4a.get_capture().transformed_depth
+                color, depth = self.k4a.get_data()
+                imu = self.k4a.get_imu()
 
+                # self.result["rgb"] = self.k4a.get_capture().color[:, :, :3]
+                # self.result["depth"] = self.k4a.get_capture().transformed_depth
+                self.result["rgb"] = color
+                self.result["depth"] = depth
+
+                # imu = []
+                # imu.extend(_imu.linear_acceleration)
+                # imu.extend(_imu.angular_velocity)
+                # imu.extend(self.k4a.get_imu_sample().pop("acc_sample"))
+                # imu.extend(self.k4a.get_imu_sample().pop("gyro_sample"))
+
+                self.result["imu"] = pickle.dumps(imu)
 
     def fps(self):
         self.current_time = time.time()

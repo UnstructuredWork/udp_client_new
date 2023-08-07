@@ -1,5 +1,6 @@
 import logging.handlers
 import time
+import pickle
 
 from src.log_printer import LogPrinter
 from src.client.rgbd_client import RgbdClient
@@ -7,6 +8,7 @@ from src.client.stereo_client import StereoClient
 from src.kinect.kinect_stream import RgbdStreamer
 from src.config import get_latency, restart_chrony
 from src.webcam.webcam_stream import StereoStreamer
+from kinect import Kinect
 
 
 logger = logging.getLogger('__main__')
@@ -31,21 +33,44 @@ def stream_sony(cfg, meta, side):
         time.sleep(1)
 
 def stream_kinect(cfg, meta, side):
-    r = RgbdStreamer(cfg.HW_INFO.RGBD, meta)
+    # r = RgbdStreamer(cfg.HW_INFO.RGBD, meta)
+    r = Kinect()
+    r.start(size=cfg.HW_INFO.RGBD.SIZE[1])
+
     c = RgbdClient(cfg.SERVER, meta, side)
 
     while True:
         while meta['CONNECT'].value:
             try:
-                r.run()
-
+                _ = r.get_data()
+                intrinsic = r.intrinsic_color.tobytes()
                 while True:
-                    if r.result["depth"] is not None:
-                        meta[side]['run'].value = True
-                        meta[side]['fps'].value = r.fps()
+                    s = time.time()
+                    color, depth = r.get_data()
+                    imu = r.get_imu()
+                    imu = pickle.dumps(imu)
 
-                        c.run(r.result)
-                        meta[side]['send'].value = True
+                    result = dict()
+                    result['rgb'] = color
+                    result['depth'] = depth
+                    result['intrinsic'] = intrinsic
+                    result['imu'] = imu
+
+                    e = time.time()
+                    cycle = (e - s) * 1000
+                    cycle = 1000 / cycle
+
+                    meta[side]['run'].value = True
+                    meta[side]['send'].value = True
+                    meta[side]['fps'].value = cycle
+
+                    c.run(result)
+
+                    # if r.result["depth"] is not None:
+                    #     meta[side]['run'].value = True
+                        # meta[side]['fps'].value = r.fps()
+                        # c.run(r.result)
+                        # meta[side]['send'].value = True
 
             except Exception as e:
                 logger.error(f"Can't open the [{side}] camera: {e}")
