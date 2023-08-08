@@ -40,13 +40,13 @@ class StereoStreamer:
 
         self.started = False
 
-        self.vid = cv2.VideoWriter(str(self.side) + '.avi', cv2.VideoWriter_fourcc(*'DIVX'), int(self.cfg.FPS * 0.75), (self.cfg.SIZE[0], self.cfg.SIZE[1]))
+        self.vid = cv2.VideoWriter(str(self.side) + '.avi', cv2.VideoWriter_fourcc(*'DIVX'), self.cfg.FPS, (self.cfg.SIZE[0], self.cfg.SIZE[1]))
 
         self.record_duration = timedelta(minutes=5)
         self.s_time = datetime.now()
         self.e_time = self.s_time + self.record_duration
 
-    @thread_method
+    @thread_me
     def run(self):
         print("")
         logger.info("Web camera stream service start.")
