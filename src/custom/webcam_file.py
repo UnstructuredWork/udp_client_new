@@ -46,7 +46,7 @@ class StereoStreamer:
         self.s_time = datetime.now()
         self.e_time = self.s_time + self.record_duration
 
-    @thread_me
+    @thread_method
     def run(self):
         print("")
         logger.info("Web camera stream service start.")
