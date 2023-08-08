@@ -22,19 +22,20 @@ class H5Player(FilePlay):
         total_index = len(hdf5['classes'])
         index = 0
 
-        frame_duration = 1 / 10         # FPS : 10
+        frame_duration = 1 / 20         # FPS : 20
 
         while True:
             classes = hdf5['classes'][str(index)][:]
-            bboxes = hdf5['bboxes'][str(index)][:]
-            mask = hdf5['mask'][str(index)][:]
+            ids     = hdf5['ids'][str(index)][:]
+            bboxes  = hdf5['bboxes'][str(index)][:]
+            mask    = hdf5['mask'][str(index)][:]
 
             self.curr_time = time.perf_counter()
 
             elapsed_time = self.curr_time - self.prev_time
             if elapsed_time > frame_duration:
                 self.prev_time = time.perf_counter()
-                self.result = classes, bboxes, mask
+                self.result = classes, ids, bboxes, mask
 
                 index += 1
             else:

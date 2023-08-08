@@ -10,6 +10,7 @@ import time
 class SingleDataClient(Client):
     def __init__(self, cfg, side):
         super().__init__(cfg, side)
+
         self.data = None
 
     def bytescode(self, package):
