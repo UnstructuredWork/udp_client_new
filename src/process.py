@@ -17,13 +17,13 @@ def play_avi(cfg, side):
             c.run(f.result)
 
 def play_multi(cfg, side):
-    file_list = ['src/data/RGB.avi', 'src/data/DEPTH.h5', 'src/data/IMU.csv']
+    file_list = ['src/data/RGB.avi', 'src/data/DEPTH.h5']
     f = MultipleData(file_list)
     f.run()
 
     c = MultipleDataClient(cfg.SERVER, side)
     while True:
-        if f.result["depth"] is not None:
+        if f.result["rgb"] is not None and f.result["depth"] is not None:
             c.run(f.result)
 
 def play_h5(cfg, side):

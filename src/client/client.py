@@ -19,8 +19,6 @@ class Package:
         self.port = getattr(self.cfg.PORT, self.side)
         self.size = getattr(self.cfg.SIZE, self.side)
 
-        self.imu = None
-
         self.frame = None
         self.get_img_time = None
 
@@ -46,7 +44,7 @@ class Client:
 
         self.side = side
 
-        if subprocess.check_output(["nvcc", "-V"]):
+        if subprocess.check_output(["nvidia-smi"]):
             self.comp = NvJpeg()
         else:
             self.comp = TurboJPEG()
@@ -82,23 +80,13 @@ class Client:
                           str(total_count) + '-' +
                           str(total_count - count + 1)).encode('utf-8')
             try:
-                if package.imu is None:
-                    self.sock.sendto(struct.pack("B", count) + b'end' +
-                                     package.header + b'end' +
-                                     packet_num + b'end' +
-                                     package.get_img_time + b'end' +
-                                     str(len(package.frame)).encode('utf-8') + b'end' +
-                                     str(array_pos_start).encode('utf-8') + b'end' +
-                                     package.frame[array_pos_start:array_pos_end], (package.host[0], package.port))
-                else:
-                    self.sock.sendto(struct.pack("B", count) + b'end' +
-                                     package.header + b'end' +
-                                     packet_num + b'end' +
-                                     package.get_img_time + b'end' +
-                                     str(len(package.frame)).encode('utf-8') + b'end' +
-                                     str(array_pos_start).encode('utf-8') + b'end' +
-                                     package.imu + b'end' +
-                                     package.frame[array_pos_start:array_pos_end], (package.host[0], package.port))
+                self.sock.sendto(struct.pack("B", count) + b'end' +
+                                 package.header + b'end' +
+                                 packet_num + b'end' +
+                                 package.get_img_time + b'end' +
+                                 str(len(package.frame)).encode('utf-8') + b'end' +
+                                 str(array_pos_start).encode('utf-8') + b'end' +
+                                 package.frame[array_pos_start:array_pos_end], (package.host[0], package.port))
             except OSError:
                 pass
 
