@@ -30,9 +30,9 @@ SERVER:
       DETECTION: 5051
       MONO_DEPTH: 5052
     SIZE:
-      STEREO_L: [ 540, 360 ]
-      STEREO_R: [ 540, 360 ]
-      RGBD: [ 540, 360 ]
+      STEREO_L: [ 1920, 1080 ]
+      STEREO_R: [ 1920, 1080 ]
+      RGBD: [ 1024, 768 ]
       DETECTION: [ 540, 360 ]
       MONO_DEPTH: [ 540, 360 ]
     SEND: True
@@ -42,4 +42,4 @@ SW_INFO:
   STEREO_R: True
   RGBD: True
   DETECTION: True
-  MONO_DEPTH: True
+  MONO_DEPTH: False
