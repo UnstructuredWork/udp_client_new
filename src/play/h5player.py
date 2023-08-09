@@ -22,7 +22,7 @@ class H5Player(FilePlay):
         total_index = len(hdf5['classes'])
         index = 0
 
-        frame_duration = 1 / 20         # FPS : 20
+        frame_duration = 1 / 30         # FPS : 20
 
         while True:
             classes = hdf5['classes'][str(index)][:]
