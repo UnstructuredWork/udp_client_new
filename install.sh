@@ -3,6 +3,7 @@ sudo apt-get install chrony libturbojpeg k4a-tools
 sudo apt-get install libk4a1.4 libk4a1.4-dev
 
 pip install -U git+https://github.com/lilohuang/PyTurboJPEG.git
+pip install -U git+https://github.com/UnstructuredWork/udp.git
 pip install -U git+https://github.com/moonjongsul/kinect.git
 
 pip install --upgrade pip

@@ -3,9 +3,8 @@ import time
 import pickle
 
 from src.log_printer import LogPrinter
-from src.client.rgbd_client import RgbdClient
-from src.client.stereo_client import StereoClient
-from src.kinect.kinect_stream import RgbdStreamer
+from udp.rgbd_client import RgbdClient
+from udp.stereo_client import StereoClient
 from src.config import get_latency, restart_chrony
 from src.webcam.webcam_stream import StereoStreamer
 from kinect import Kinect
@@ -33,7 +32,6 @@ def stream_sony(cfg, meta, side):
         time.sleep(1)
 
 def stream_kinect(cfg, meta, side):
-    # r = RgbdStreamer(cfg.HW_INFO.RGBD, meta)
     r = Kinect()
     r.start(size=cfg.HW_INFO.RGBD.SIZE[1])
 
