@@ -2,8 +2,8 @@ import logging.handlers
 import time
 import pickle
 
-from udp import RgbdClient
-from udp import StereoClient
+from client import RgbdClient
+from client import StereoClient
 from src.log_printer import LogPrinter
 from src.config import get_latency, restart_chrony
 from src.webcam.webcam_stream import StereoStreamer
