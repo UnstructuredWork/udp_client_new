@@ -1,20 +1,21 @@
 import argparse
 
 from src.config import get_cfg
-from src.custom.kinect_file import RgbdStreamer
-from src.custom.webcam_file import StereoStreamer
+from src.custom import RgbdStreamer
+from src.custom import StereoStreamer
 
 def main():
     args = get_parser()
     cfg = setup_cfg(args.config_file)
 
+    r = RgbdStreamer(cfg.HW_INFO.RGBD, 'RGBD')
     s1 = StereoStreamer(cfg.HW_INFO, 'STEREO_L')
     s2 = StereoStreamer(cfg.HW_INFO, 'STEREO_R')
-    r = RgbdStreamer(cfg.HW_INFO.RGBD)
 
+    r.run()
     s1.run()
     s2.run()
-    r.run()
+
 
 def setup_cfg(cfg_file):
     cfg = get_cfg()

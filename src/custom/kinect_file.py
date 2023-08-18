@@ -1,18 +1,13 @@
 import cv2
-import csv
-import h5py
 import time
-import pickle
-import numpy as np
 
 from src.parallel import thread_method
-from datetime import datetime, timedelta
 
 import pyk4a
-from pyk4a import Config, PyK4A
+from pyk4a import Config, PyK4A, PyK4ARecord
 
 class RgbdStreamer:
-    def __init__(self, cfg):
+    def __init__(self, cfg, side):
         self.openCL = False
 
         if cv2.ocl.haveOpenCL():
@@ -20,6 +15,8 @@ class RgbdStreamer:
             self.openCL = True
 
         self.cfg = cfg
+        self.side = side
+        self.device = 0
 
         self.fps_list = {"30": pyk4a.FPS.FPS_30,
                          "15": pyk4a.FPS.FPS_30,
@@ -32,12 +29,15 @@ class RgbdStreamer:
                                 "1080": pyk4a.ColorResolution.RES_1080P,
                                 "720": pyk4a.ColorResolution.RES_720P}
 
+        self.cam_cfg = Config(
+            color_resolution=self.resolution_list[str(self.cfg.SIZE[1])],
+            color_format=pyk4a.ImageFormat.COLOR_MJPG,
+            depth_mode=pyk4a.DepthMode.WFOV_2X2BINNED,
+            camera_fps=self.fps_list[str(self.cfg.FPS)])
+
         self.k4a = PyK4A(
-            Config(
-                color_resolution=self.resolution_list[str(self.cfg.SIZE[1])],
-                depth_mode=pyk4a.DepthMode.WFOV_2X2BINNED,
-                camera_fps=self.fps_list[str(self.cfg.FPS)]
-            )
+            config=self.cam_cfg,
+            device_id=self.device
         )
 
         self.result = {"imu": None,
@@ -49,19 +49,16 @@ class RgbdStreamer:
 
         self.sec = 0
 
+        self.record = PyK4ARecord(
+            device=self.k4a,
+            config=self.cam_cfg,
+            path=str(self.side) + '.mkv'
+        )
+
         self.set()
+        self.started = False
 
-        self.started  = False
-
-        self.vid = cv2.VideoWriter('RGB.avi', cv2.VideoWriter_fourcc(*'DIVX'), self.cfg.FPS, (self.cfg.SIZE[0], self.cfg.SIZE[1]))
-        self.hdf5 = h5py.File('DEPTH.h5', 'w')
-        # self.csv = open('IMU.csv', 'w', newline='')
-        # self.csv_wr = csv.writer(self.csv)
-        self.index = 0
-
-        self.record_duration = timedelta(minutes=5)
-        self.s_time = datetime.now()
-        self.e_time = self.s_time + self.record_duration
+        self.capture_count = 9000  # 30fps X 300 = 9000
 
     def set(self):
         self.k4a.start()
@@ -69,55 +66,31 @@ class RgbdStreamer:
         assert self.k4a.whitebalance == 4500
         self.k4a.whitebalance = 4510
         assert self.k4a.whitebalance == 4510
+        self.record.create()
 
     @thread_method
     def run(self):
-        # self.imu_update()
-        self.frame_update()
-
         self.started = True
-
-        print("[INFO] Kinect connection is complete.")
-
-        self.str = time.time()
+        self.cam_update()
 
     def stop(self):
         self.started = False
-
-        self.k4a._stop_imu()
         self.k4a.stop()
-
-        print("[INFO] Kinect stopped.")
-
-    @thread_method
-    def imu_update(self):
-        while True:
-            if self.started:
-                acc_xyz = self.k4a.get_imu_sample().pop("acc_sample")
-                gyro_xyz = self.k4a.get_imu_sample().pop("gyro_sample")
-                self.result["imu"] = pickle.dumps([acc_xyz, gyro_xyz])
-
-                if datetime.now() < self.e_time:
-                    self.csv_wr.writerow([acc_xyz, gyro_xyz])
-                else:
-                    print('----------------------------Record IMU----------------------------')
-                    self.csv.close()
+        self.record.flush()
+        self.record.close()
 
     @thread_method
-    def frame_update(self):
-        while True:
-            if self.started:
-                self.result["rgb"] = self.k4a.get_capture().color[:, :, :3]
-                self.result["depth"] = self.k4a.get_capture().transformed_depth
-
-                if datetime.now() < self.e_time:
-                    self.vid.write(self.result["rgb"])
-                    self.hdf5[str(self.index)] = self.result['depth']
-                    self.index += 1
+    def cam_update(self):
+        if self.started:
+            print(f"[INFO] {self.side} Recording...")
+            while True:
+                capture = self.k4a.get_capture()
+                if self.record.captures_count != self.capture_count:
+                    self.record.write_capture(capture)
                 else:
-                    print('----------------------------Record RGBD----------------------------')
-                    self.vid.release()
-                    self.hdf5.close()
+                    print(f"[INFO] {self.side} Exiting.")
+                    self.stop()
+                    break
 
     def fps(self):
         self.current_time = time.time()
