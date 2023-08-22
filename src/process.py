@@ -16,9 +16,8 @@ def play_avi(cfg, side):
         if f.result is not None:
             c.run(f.result)
 
-def play_multi(cfg, side):
-    file_list = ['src/data/RGB.avi', 'src/data/DEPTH.h5']
-    f = MultipleData(file_list)
+def play_mkv(cfg, side):
+    f = MultipleData('src/data/' + side + '.mkv')
     f.run()
 
     c = MultipleDataClient(cfg.SERVER, side)

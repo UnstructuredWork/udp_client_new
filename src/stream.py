@@ -39,7 +39,7 @@ class Stream:
             self.proc_list.extend([1, Process(target=play_avi, args=(self.cfg, 'STEREO_R'))])
 
         if self.cfg.SW_INFO.RGBD:
-            self.proc_list.extend([1, Process(target=play_multi, args=(self.cfg, 'RGBD'))])
+            self.proc_list.extend([1, Process(target=play_mkv, args=(self.cfg, 'RGBD'))])
 
         if self.cfg.SW_INFO.DETECTION:
             self.proc_list.extend([1, Process(target=play_h5, args=(self.cfg, 'DETECTION'))])

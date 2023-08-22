@@ -7,3 +7,4 @@ ntplib
 pynvjpeg
 fvcore
 pyk4a
+h5py
