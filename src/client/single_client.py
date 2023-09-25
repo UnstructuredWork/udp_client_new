@@ -1,12 +1,12 @@
 import cv2
+import json
 import zlib
 import struct
-import pickle
 
 from .client import Client
 from datetime import datetime
 from src.parallel import thread_method
-import time
+
 class SingleDataClient(Client):
     def __init__(self, cfg, side):
         super().__init__(cfg, side)
@@ -19,7 +19,7 @@ class SingleDataClient(Client):
         if self.side == 'STEREO_L' or self.side == 'STEREO_R':
             package.frame = self.comp.encode(self.resize(data, package), 40)
         elif self.side == 'DETECTION':
-            package.frame = zlib.compress(pickle.dumps(data))
+            package.frame = zlib.compress(json.dumps(data).encode('utf-8'))
         elif self.side == 'MONO_DEPTH':
             package.frame = cv2.imencode('.png', self.resize(data, package), [cv2.IMWRITE_PNG_COMPRESSION, 4])[1].tobytes()
 
