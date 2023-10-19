@@ -64,10 +64,17 @@ class Stream:
                 self.meta['STEREO_R'] = _gen_meta()
                 self.proc_list.extend([1, Process(target=stream_sony, args=(self.cfg, self.meta, 'STEREO_R'))])
 
+            # 같은 데이터를 udp냐, flask냐에 따라서 두개의 프로세서를 돌릴 수 있지않을까싶은데
+
             if self.cfg.HW_INFO.RGBD.USE:
                 self.meta['RGBD'] = _gen_meta()
                 self.proc_list.extend([1, Process(target=stream_kinect,
                                                   args=(self.cfg, self.meta, rgbd, 'RGBD'))])
+
+            if self.cfg.HW_INFO.RGBD.FLASK_USE:
+                self.meta['RGBD_FLASK'] = _gen_meta()
+                self.proc_list.extend([1, Process(target=stream_kinect_flask,
+                                                  args=(self.cfg, self.meta, rgbd, 'RGBD_FLASK'))])
 
             #### pipeline을 하나 더 만들어야하나?
         else:
@@ -99,7 +106,8 @@ class Stream:
 
 
     def check_cam(self):
-        if self.cfg.HW_INFO.STEREO_L.USE or self.cfg.HW_INFO.STEREO_R.USE or self.cfg.HW_INFO.RGBD.USE:
+        if self.cfg.HW_INFO.STEREO_L.USE or self.cfg.HW_INFO.STEREO_R.USE \
+                or self.cfg.HW_INFO.RGBD.USE or self.cfg.HW_INFO.RGBD.FLASK_USE:
             return True
         else:
             return False

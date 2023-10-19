@@ -52,8 +52,10 @@ HW_INFO:
 #    SERIAL: "5311372000739"
     SERIAL: "5311372000780"
     FORMAT: YUYV
+
   RGBD:   # Azure Kinect camera
     TYPE: kinect
     SIZE: [1280, 720]
     USE: True
     FPS: "30"
+    FLASK_USE: True

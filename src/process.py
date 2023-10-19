@@ -80,6 +80,42 @@ def stream_kinect(cfg, meta, rgbd, side):
 
         time.sleep(1)
 
+def stream_kinect_flask(cfg, meta, rgbd, side):
+    @app.route('/stream/kinect')
+    def stream():
+        def generate():
+            try:
+                print("[INFO] Connected sony cam streaming URL from remote.")
+
+                while True:
+                    # if s.meta['RGBD'] is not None:
+                    # if s.color is not None:
+                    frame = s.bytescode()
+
+                    yield (b'--frame\r\n'
+                           b'Content-Type: image/jpeg\r\n'
+                           b'Content-Length: ' + f"{len(frame)}".encode() + b'\r\n'b'\r\n' + frame + b'\r\n')
+
+            except GeneratorExit:
+                print("[INFO] Disconnected sony cam streaming URL from remote.")
+                # streamer.stop()
+
+        try:
+            response = Response(stream_with_context(generate()),
+                                mimetype='multipart/x-mixed-replace; boundary=frame')
+
+            return response
+
+        except Exception as e:
+
+            print(e)
+
+    @app.route('/')
+    def index():
+        latency_current_time = time.time()
+        template_data = {'time': str(latency_current_time)}
+        return render_template('index.html', **template_data)
+
 
 def monitor(cfg, meta):
     m = LogPrinter(cfg)
