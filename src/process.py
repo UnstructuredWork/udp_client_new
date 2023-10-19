@@ -9,7 +9,6 @@ from src.config import get_latency, restart_chrony
 from src.webcam.webcam_stream import StereoStreamer
 from kinect import Kinect
 
-
 logger = logging.getLogger('__main__')
 
 def stream_sony(cfg, meta, side):
@@ -31,7 +30,7 @@ def stream_sony(cfg, meta, side):
 
         time.sleep(1)
 
-def stream_kinect(cfg, meta, side):
+def stream_kinect(cfg, meta, rgbd, side):
     r = Kinect()
     r.start(size=cfg.HW_INFO.RGBD.SIZE[1])
 
@@ -47,6 +46,9 @@ def stream_kinect(cfg, meta, side):
                     color, depth = r.get_data()
                     imu = r.get_imu()
                     imu = pickle.dumps(imu)
+
+                    rgbd['color'] = color
+                    rgbd['depth'] = depth
 
                     result = dict()
                     result['rgb'] = color
@@ -77,6 +79,7 @@ def stream_kinect(cfg, meta, side):
         meta[side]['fps'].value = 0
 
         time.sleep(1)
+
 
 def monitor(cfg, meta):
     m = LogPrinter(cfg)

@@ -5,13 +5,13 @@ SYSTEM:
     PRINT_PERIOD: 10
 
   SYNC:
-    SERVER: 10.252.101.111
+    SERVER: 10.252.101.186
     RESTART: True
     TOLERANCE: 2
 
 SERVER:
   CLOUD:
-    HOST: ['10.252.101.175']
+    HOST: ['10.252.101.243']
     PORT:
       STEREO_L: 5001
       STEREO_R: 5002
@@ -23,7 +23,7 @@ SERVER:
     SEND: True
 
   UNITY:
-    HOST: ['10.252.101.111']
+    HOST: ['10.252.101.186']
     PORT:
       STEREO_L: 5001
       STEREO_R: 5002
@@ -40,7 +40,8 @@ HW_INFO:
     SIZE: [1920, 1080]
     USE: False
     FPS: 60
-    SERIAL: "5311372000050"
+#    SERIAL: "5311372000050"
+    SERIAL: "5311372000254"
     FORMAT: YUYV
 
   STEREO_R:   # Right Sony camera
@@ -48,7 +49,8 @@ HW_INFO:
     SIZE: [1920, 1080]
     USE: False
     FPS: 60
-    SERIAL: "5311372000739"
+#    SERIAL: "5311372000739"
+    SERIAL: "5311372000780"
     FORMAT: YUYV
   RGBD:   # Azure Kinect camera
     TYPE: kinect
