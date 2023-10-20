@@ -2,12 +2,15 @@ import logging.handlers
 import time
 import pickle
 import cv2
+import numpy as np
 
 from client import RgbdClient
 from client import StereoClient
 from src.log_printer import LogPrinter
 from src.config import get_latency, restart_chrony
 from src.webcam.webcam_stream import StereoStreamer
+from src.webcam.resolution import get_resolution
+
 from kinect import Kinect
 
 from flask import Flask
@@ -72,9 +75,6 @@ def stream_kinect(cfg, meta, side):
                     data['intrinsic'] = intrinsic
                     data['imu'] = imu
 
-                    # print(color.shape) # 720, 1280, 3
-                    # print(depth.shape) # 720, 1280
-
                     result = dict()
                     result['rgb'] = color
                     result['depth'] = depth
@@ -113,25 +113,25 @@ def stream_flask():
         except GeneratorExit:
             app.run(host='0.0.0.0', port=5000)
 
-@app.route('/stream/rgb')
+@app.route('/kinect/rgb')
 def stream_rgb():
     def generate():
         try:
-            print("[INFO] Connected kinect cam streaming URL from remote.")
+            print("[INFO] Connected kinect rgb streaming URL from remote.")
 
             jpeg = TurboJPEG()
 
             while True:
-                if data['rgb'] is not None:
-                    frame = jpeg.encode(data['rgb'], quality=50)  # , flags=TJFLAG_PROGRESSIVE)
-                    print("rgb", data['rgb'].shape)
+                rgb = data['rgb']
+                if rgb is not None:
+                    frame = jpeg.encode(rgb, quality=50)  # , flags=TJFLAG_PROGRESSIVE)
 
                 yield (b'--frame\r\n'
                         b'Content-Type: image/jpeg\r\n'
                         b'Content-Length: ' + f"{len(frame)}".encode() + b'\r\n'b'\r\n' + frame + b'\r\n')
 
         except GeneratorExit:
-            print("[INFO] Disconnected kinect cam streaming URL from remote.")
+            print("[INFO] Disconnected kinect rgb streaming URL from remote.")
             # streamer.stop()
 
     try:
@@ -144,25 +144,32 @@ def stream_rgb():
 
         print(e)
 
-@app.route('/stream/depth')
+@app.route('/kinect/depth')
 def stream_depth():
     def generate():
         try:
-            print("[INFO] Connected kinect cam streaming URL from remote.")
+            print("[INFO] Connected kinect depth streaming URL from remote.")
 
             jpeg = TurboJPEG()
 
             while True:
-                if data['depth'] is not None:
-                    frame = jpeg.encode(data['depth'], quality=50)  # , flags=TJFLAG_PROGRESSIVE)
-                    print("depth", data['depth'].shape)
+                depth = data['depth']
+                if depth is not None:
+                    inverse_depth = (65535 - depth).astype('uint8')
+                    inverse_depth = cv2.resize(inverse_depth, dsize=depth.shape[::-1], fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA)
+                    # inverse_depth = cv2.resize(inverse_depth, dsize=img_size, fx=0.5, fy=0.5, interpolation=cv2.INTER_CUBIC)
+
+                    # print(inverse_depth)
+
+                    encoded_img = cv2.imencode('.jpg', inverse_depth)[1]
+                    frame = encoded_img.tobytes()
 
                 yield (b'--frame\r\n'
                         b'Content-Type: image/jpeg\r\n'
                         b'Content-Length: ' + f"{len(frame)}".encode() + b'\r\n'b'\r\n' + frame + b'\r\n')
 
         except GeneratorExit:
-            print("[INFO] Disconnected kinect cam streaming URL from remote.")
+            print("[INFO] Disconnected kinect depth streaming URL from remote.")
             # streamer.stop()
 
     try:
