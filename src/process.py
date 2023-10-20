@@ -1,6 +1,7 @@
 import logging.handlers
 import time
 import pickle
+import cv2
 
 from client import RgbdClient
 from client import StereoClient
@@ -8,6 +9,25 @@ from src.log_printer import LogPrinter
 from src.config import get_latency, restart_chrony
 from src.webcam.webcam_stream import StereoStreamer
 from kinect import Kinect
+
+from flask import Flask
+from flask import Response
+from flask import render_template
+from flask import stream_with_context
+
+from multiprocessing import Manager
+from turbojpeg import TurboJPEG, TJFLAG_PROGRESSIVE
+
+import warnings
+warnings.filterwarnings(action='ignore')
+
+version = '0.1.0'
+
+manager = Manager()
+data = manager.dict()
+
+app = Flask(__name__)
+
 
 logger = logging.getLogger('__main__')
 
@@ -30,7 +50,7 @@ def stream_sony(cfg, meta, side):
 
         time.sleep(1)
 
-def stream_kinect(cfg, meta, rgbd, side):
+def stream_kinect(cfg, meta, side):
     r = Kinect()
     r.start(size=cfg.HW_INFO.RGBD.SIZE[1])
 
@@ -47,8 +67,13 @@ def stream_kinect(cfg, meta, rgbd, side):
                     imu = r.get_imu()
                     imu = pickle.dumps(imu)
 
-                    rgbd['color'] = color
-                    rgbd['depth'] = depth
+                    data['rgb'] = color
+                    data['depth'] = depth
+                    data['intrinsic'] = intrinsic
+                    data['imu'] = imu
+
+                    # print(color.shape) # 720, 1280, 3
+                    # print(depth.shape) # 720, 1280
 
                     result = dict()
                     result['rgb'] = color
@@ -80,42 +105,81 @@ def stream_kinect(cfg, meta, rgbd, side):
 
         time.sleep(1)
 
-def stream_kinect_flask(cfg, meta, rgbd, side):
-    @app.route('/stream/kinect')
-    def stream():
-        def generate():
-            try:
-                print("[INFO] Connected sony cam streaming URL from remote.")
-
-                while True:
-                    # if s.meta['RGBD'] is not None:
-                    # if s.color is not None:
-                    frame = s.bytescode()
-
-                    yield (b'--frame\r\n'
-                           b'Content-Type: image/jpeg\r\n'
-                           b'Content-Length: ' + f"{len(frame)}".encode() + b'\r\n'b'\r\n' + frame + b'\r\n')
-
-            except GeneratorExit:
-                print("[INFO] Disconnected sony cam streaming URL from remote.")
-                # streamer.stop()
-
+def stream_flask():
+    while True:
         try:
-            response = Response(stream_with_context(generate()),
-                                mimetype='multipart/x-mixed-replace; boundary=frame')
+            app.run(host='0.0.0.0', port=5000)
 
-            return response
+        except GeneratorExit:
+            app.run(host='0.0.0.0', port=5000)
 
-        except Exception as e:
+@app.route('/stream/rgb')
+def stream_rgb():
+    def generate():
+        try:
+            print("[INFO] Connected kinect cam streaming URL from remote.")
 
-            print(e)
+            jpeg = TurboJPEG()
 
-    @app.route('/')
-    def index():
-        latency_current_time = time.time()
-        template_data = {'time': str(latency_current_time)}
-        return render_template('index.html', **template_data)
+            while True:
+                if data['rgb'] is not None:
+                    frame = jpeg.encode(data['rgb'], quality=50)  # , flags=TJFLAG_PROGRESSIVE)
+                    print("rgb", data['rgb'].shape)
 
+                yield (b'--frame\r\n'
+                        b'Content-Type: image/jpeg\r\n'
+                        b'Content-Length: ' + f"{len(frame)}".encode() + b'\r\n'b'\r\n' + frame + b'\r\n')
+
+        except GeneratorExit:
+            print("[INFO] Disconnected kinect cam streaming URL from remote.")
+            # streamer.stop()
+
+    try:
+        response = Response(stream_with_context(generate()),
+                            mimetype='multipart/x-mixed-replace; boundary=frame')
+
+        return response
+
+    except Exception as e:
+
+        print(e)
+
+@app.route('/stream/depth')
+def stream_depth():
+    def generate():
+        try:
+            print("[INFO] Connected kinect cam streaming URL from remote.")
+
+            jpeg = TurboJPEG()
+
+            while True:
+                if data['depth'] is not None:
+                    frame = jpeg.encode(data['depth'], quality=50)  # , flags=TJFLAG_PROGRESSIVE)
+                    print("depth", data['depth'].shape)
+
+                yield (b'--frame\r\n'
+                        b'Content-Type: image/jpeg\r\n'
+                        b'Content-Length: ' + f"{len(frame)}".encode() + b'\r\n'b'\r\n' + frame + b'\r\n')
+
+        except GeneratorExit:
+            print("[INFO] Disconnected kinect cam streaming URL from remote.")
+            # streamer.stop()
+
+    try:
+        response = Response(stream_with_context(generate()),
+                            mimetype='multipart/x-mixed-replace; boundary=frame')
+
+        return response
+
+    except Exception as e:
+
+        print(e)
+
+@app.route('/')
+def index():
+    latency_current_time = time.time()
+    template_data = {'time': str(latency_current_time)}
+    return render_template('index.html', **template_data)
 
 def monitor(cfg, meta):
     m = LogPrinter(cfg)

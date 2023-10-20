@@ -1,14 +1,33 @@
-import warnings
-warnings.filterwarnings(action='ignore')
+import argparse
 
-from src.flask.server import app
+from src.config import get_cfg, setup_logger, setup_chrony
+from src import Stream
 
-version = '0.1.0'
+
+def main():
+    args = get_parser()
+    cfg = setup_cfg(args.config_file)
+
+    setup_logger(cfg.SYSTEM.LOG.SAVE)
+    setup_chrony(cfg.SYSTEM.SYNC.SERVER)
+
+    s = Stream(cfg)
+    s.build_pipeline()
+
+    s.run()
+
+def setup_cfg(cfg_file):
+    cfg = get_cfg()
+    cfg.merge_from_file(cfg_file)
+    return cfg
+
+def get_parser():
+    parser = argparse.ArgumentParser(description="Cloud Server configs")
+    parser.add_argument('-c', '--config-file',
+                        default="./config/config.yaml",
+                        help="A configuration file of camera")
+    return parser.parse_args()
+
 
 if __name__ == "__main__":
-    while True:
-        try:
-            app.run(host='0.0.0.0', port=5000)
-
-        except GeneratorExit:
-            app.run(host='0.0.0.0', port=5000)
+    main()

@@ -5,7 +5,7 @@ SYSTEM:
     PRINT_PERIOD: 10
 
   SYNC:
-    SERVER: 10.252.101.186
+    SERVER: 10.252.117.122
     RESTART: True
     TOLERANCE: 2
 
@@ -23,7 +23,7 @@ SERVER:
     SEND: True
 
   UNITY:
-    HOST: ['10.252.101.186']
+    HOST: ['10.252.117.122']
     PORT:
       STEREO_L: 5001
       STEREO_R: 5002
@@ -57,5 +57,5 @@ HW_INFO:
     TYPE: kinect
     SIZE: [1280, 720]
     USE: True
-    FPS: "30"
     FLASK_USE: True
+    FPS: "30"
