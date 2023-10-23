@@ -10,6 +10,7 @@ from src.log_printer import LogPrinter
 from src.config import get_latency, restart_chrony
 from src.webcam.webcam_stream import StereoStreamer
 from src.webcam.resolution import get_resolution
+from src.depth import Depth
 
 from kinect import Kinect
 
@@ -70,7 +71,7 @@ def stream_kinect(cfg, meta, side):
                     imu = r.get_imu()
                     imu = pickle.dumps(imu)
 
-                    data['rgb'] = color
+                    data['rgb'] = color[:, :, ::-1]
                     data['depth'] = depth
                     data['intrinsic'] = intrinsic
                     data['imu'] = imu
@@ -105,6 +106,48 @@ def stream_kinect(cfg, meta, side):
 
         time.sleep(1)
 
+def stream_mono_depth(cfg, meta, side):
+    dep = None
+
+    if cfg.HW_INFO.MONO_DEPTH.MODEL == 'intel':
+        dep = Depth(cfg)
+    elif cfg.HW_INFO.MONO_DEPTH.MODEL == 'any':
+        pass
+
+    if dep is not None:
+        logger.info(f"MONO_DEPTH process set to [{cfg.HW_INFO.MONO_DEPTH.MODEL}].")
+
+        if dep.ready:
+            while True:
+                while meta['CONNECT'].value:
+                    try:
+                        s = time.time()
+
+                        rgb = data['rgb']
+                        if rgb is not None:
+                            # img = np.zeros(cfg.HW_INFO.MONO_DEPTH.SIZE[::-1] + [3], dtype=np.uint8)
+                            # img[:, :, :] = rgb[:, :, :]
+                            # img = cv2.resize(img, dsize=cfg.HW_INFO.MONO_DEPTH.SIZE)
+
+                            depth = dep.get(rgb)
+
+                            e = time.time()
+                            cycle = (e - s) * 1000
+                            cycle = 1000 / cycle
+
+                            meta[side]['run'].value = True
+                            meta[side]['send'].value = True
+                            meta[side]['fps'].value = cycle
+
+                            data['depth_estimation'] = depth
+                    except Exception as e:
+                        logger.error(f"Can't open the [{side}] camera: {e}")
+
+                meta[side]['send'].value = False
+                meta[side]['fps'].value = 0
+
+                time.sleep(1)
+
 def stream_flask():
     while True:
         try:
@@ -124,12 +167,7 @@ def stream_rgb():
             while True:
                 rgb = data['rgb']
                 if rgb is not None:
-                    raw_color = np.zeros(rgb.shape, dtype=np.uint8)
-                    raw_color[:, :, 0] = rgb[:, :, 2]
-                    raw_color[:, :, 1] = rgb[:, :, 1]
-                    raw_color[:, :, 2] = rgb[:, :, 0]
-                    # _rgb = rgb[:, :, ::-1]
-                    frame = jpeg.encode(raw_color, quality=50)  # , flags=TJFLAG_PROGRESSIVE)
+                    frame = jpeg.encode(rgb, quality=50)  # , flags=TJFLAG_PROGRESSIVE)
 
                 yield (b'--frame\r\n'
                         b'Content-Type: image/jpeg\r\n'
@@ -155,12 +193,10 @@ def stream_depth():
         try:
             print("[INFO] Connected kinect depth streaming URL from remote.")
 
-            jpeg = TurboJPEG()
-
             while True:
                 depth = data['depth']
                 if depth is not None:
-                    max_value = 1000
+                    max_value = 10000
 
                     depth = np.where(depth == 0, max_value, depth)
                     depth = np.where(depth > max_value, max_value, depth)
@@ -180,6 +216,36 @@ def stream_depth():
 
         except GeneratorExit:
             print("[INFO] Disconnected kinect depth streaming URL from remote.")
+            # streamer.stop()
+
+    try:
+        response = Response(stream_with_context(generate()),
+                            mimetype='multipart/x-mixed-replace; boundary=frame')
+
+        return response
+
+    except Exception as e:
+
+        print(e)
+
+@app.route('/mono/depth')
+def stream_depth_estimation():
+    def generate():
+        try:
+            print("[INFO] Connected depth estimation streaming URL from remote.")
+
+            while True:
+                depth = data['depth_estimation']
+                if depth is not None:
+                    encoded_img = cv2.imencode('.jpg', depth)[1]
+                    frame = encoded_img.tobytes()
+
+                yield (b'--frame\r\n'
+                        b'Content-Type: image/jpeg\r\n'
+                        b'Content-Length: ' + f"{len(frame)}".encode() + b'\r\n'b'\r\n' + frame + b'\r\n')
+
+        except GeneratorExit:
+            print("[INFO] Disconnected depth estimation streaming URL from remote.")
             # streamer.stop()
 
     try:

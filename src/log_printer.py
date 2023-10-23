@@ -30,7 +30,7 @@ class LogPrinter:
             )
 
             for k, v in data.items():
-                if k in ['STEREO_L', 'STEREO_R', 'RGBD']:
+                if k in ['STEREO_L', 'STEREO_R', 'RGBD', 'MONO_DEPTH']:
                     logger.info(f"{k:<8} - RUN: {bool(v['run'].value)}. "
                                 f"Send: {bool(v['send'].value)}. FPS: {int(v['fps'].value):>2}.")
 

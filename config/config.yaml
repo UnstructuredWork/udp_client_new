@@ -59,3 +59,11 @@ HW_INFO:
     USE: True
     FLASK_USE: True
     FPS: "30"
+
+  MONO_DEPTH:   # Azure Kinect mono depth estimation
+    TYPE: kinect
+    SIZE: [1280, 720]
+    USE: True
+    FPS: "30"
+    MODEL: intel
+    WEIGHT: "DPT_Hybrid" #"DPT_Large" #"MiDaS_small"
