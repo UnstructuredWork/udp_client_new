@@ -5,7 +5,7 @@ SYSTEM:
     PRINT_PERIOD: 10
 
   SYNC:
-    SERVER: 10.252.117.122
+    SERVER: 192.168.0.2
     RESTART: True
     TOLERANCE: 2
 
@@ -23,7 +23,7 @@ SERVER:
     SEND: True
 
   UNITY:
-    HOST: ['10.252.117.122']
+    HOST: ['192.168.0.2']
     PORT:
       STEREO_L: 5001
       STEREO_R: 5002

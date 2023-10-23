@@ -124,7 +124,12 @@ def stream_rgb():
             while True:
                 rgb = data['rgb']
                 if rgb is not None:
-                    frame = jpeg.encode(rgb, quality=50)  # , flags=TJFLAG_PROGRESSIVE)
+                    raw_color = np.zeros(rgb.shape, dtype=np.uint8)
+                    raw_color[:, :, 0] = rgb[:, :, 2]
+                    raw_color[:, :, 1] = rgb[:, :, 1]
+                    raw_color[:, :, 2] = rgb[:, :, 0]
+                    # _rgb = rgb[:, :, ::-1]
+                    frame = jpeg.encode(raw_color, quality=50)  # , flags=TJFLAG_PROGRESSIVE)
 
                 yield (b'--frame\r\n'
                         b'Content-Type: image/jpeg\r\n'
@@ -155,11 +160,16 @@ def stream_depth():
             while True:
                 depth = data['depth']
                 if depth is not None:
-                    inverse_depth = (65535 - depth).astype('uint8')
+                    max_value = 1000
+
+                    depth = np.where(depth == 0, max_value, depth)
+                    depth = np.where(depth > max_value, max_value, depth)
+
+                    depth = (depth / max_value * 255).astype('uint8')
+                    inverse_depth = (255 - depth).astype('uint8')
+
                     inverse_depth = cv2.resize(inverse_depth, dsize=depth.shape[::-1], fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA)
                     # inverse_depth = cv2.resize(inverse_depth, dsize=img_size, fx=0.5, fy=0.5, interpolation=cv2.INTER_CUBIC)
-
-                    # print(inverse_depth)
 
                     encoded_img = cv2.imencode('.jpg', inverse_depth)[1]
                     frame = encoded_img.tobytes()
