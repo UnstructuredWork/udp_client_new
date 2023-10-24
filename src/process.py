@@ -2,8 +2,8 @@ import logging.handlers
 import time
 import pickle
 
-from client import RgbdClient
-from client import StereoClient
+from keti_client import RgbdClient
+from keti_client import StereoClient
 from src.log_printer import LogPrinter
 from src.config import get_latency, restart_chrony
 from src.webcam.webcam_stream import StereoStreamer
@@ -41,7 +41,7 @@ def stream_kinect(cfg, meta, side):
         while meta['CONNECT'].value:
             try:
                 _ = r.get_data()
-                intrinsic = r.intrinsic_color.tobytes()
+                intrinsic = (r.intrinsic_color / 2.0).tobytes()
                 while True:
                     s = time.time()
                     color, depth = r.get_data()
