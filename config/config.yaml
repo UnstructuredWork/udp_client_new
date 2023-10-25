@@ -5,7 +5,7 @@ SYSTEM:
     PRINT_PERIOD: 10
 
   SYNC:
-    SERVER: 192.168.0.2
+    SERVER: 10.252.101.240
     RESTART: True
     TOLERANCE: 2
 
@@ -23,7 +23,7 @@ SERVER:
     SEND: True
 
   UNITY:
-    HOST: ['192.168.0.2']
+    HOST: ['10.252.101.240']
     PORT:
       STEREO_L: 5001
       STEREO_R: 5002
@@ -55,15 +55,15 @@ HW_INFO:
 
   RGBD:   # Azure Kinect camera
     TYPE: kinect
-    SIZE: [1280, 720]
+    SIZE: [1920, 1080]
     USE: True
     FLASK_USE: True
     FPS: "30"
 
   MONO_DEPTH:   # Azure Kinect mono depth estimation
     TYPE: kinect
-    SIZE: [1280, 720]
-    USE: True
+    SIZE: [1920, 1080]
+    USE: False
     FPS: "30"
     MODEL: intel
     WEIGHT: "DPT_Hybrid" #"DPT_Large" #"MiDaS_small"

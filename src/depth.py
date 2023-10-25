@@ -38,7 +38,6 @@ class Depth:
 
             self.transform = self.midas_transforms.dpt_transform
 
-
             _ = self.get(np.ones((100, 100, 3), dtype=np.uint8))
 
             self.ready = True

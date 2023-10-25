@@ -9,8 +9,8 @@ from client import StereoClient
 from src.log_printer import LogPrinter
 from src.config import get_latency, restart_chrony
 from src.webcam.webcam_stream import StereoStreamer
-from src.webcam.resolution import get_resolution
 from src.depth import Depth
+from src.kinect.postProcessing import smooth_depth_image
 
 from kinect import Kinect
 
@@ -70,6 +70,13 @@ def stream_kinect(cfg, meta, side):
                     color, depth = r.get_data()
                     imu = r.get_imu()
                     imu = pickle.dumps(imu)
+
+                    max_value = 2880
+
+                    depth = ((depth / max_value) * 255).astype('uint8')
+
+                    # max_hole_size = 1
+                    # depth = smooth_depth_image(depth, max_hole_size)
 
                     data['rgb'] = color[:, :, ::-1]
                     data['depth'] = depth
@@ -140,6 +147,7 @@ def stream_mono_depth(cfg, meta, side):
                             meta[side]['fps'].value = cycle
 
                             data['depth_estimation'] = depth
+
                     except Exception as e:
                         logger.error(f"Can't open the [{side}] camera: {e}")
 
@@ -196,17 +204,7 @@ def stream_depth():
             while True:
                 depth = data['depth']
                 if depth is not None:
-                    max_value = 10000
-
-                    depth = np.where(depth == 0, max_value, depth)
-                    depth = np.where(depth > max_value, max_value, depth)
-
-                    depth = (depth / max_value * 255).astype('uint8')
                     inverse_depth = (255 - depth).astype('uint8')
-
-                    inverse_depth = cv2.resize(inverse_depth, dsize=depth.shape[::-1], fx=0.5, fy=0.5, interpolation=cv2.INTER_AREA)
-                    # inverse_depth = cv2.resize(inverse_depth, dsize=img_size, fx=0.5, fy=0.5, interpolation=cv2.INTER_CUBIC)
-
                     encoded_img = cv2.imencode('.jpg', inverse_depth)[1]
                     frame = encoded_img.tobytes()
 
