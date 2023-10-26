@@ -47,6 +47,13 @@ class Stream:
             if self.cfg.HW_INFO.RGBD.USE:
                 self.meta['RGBD'] = _gen_meta()
                 self.proc_list.extend([1, Process(target=stream_kinect, args=(self.cfg, self.meta, 'RGBD'))])
+
+                if self.cfg.SERVER.FLASK.SEND:
+                    self.proc_list.extend([1, Process(target=stream_flask, args=(self.cfg,))])
+
+                # if self.cfg.HW_INFO.MONO_DEPTH.USE:
+                #     self.meta['MONO_DEPTH'] = _gen_meta()
+                #     self.proc_list.extend([1, Process(target=stream_mono_depth, args=(self.cfg, self.meta, 'MONO_DEPTH'))])
         else:
             logger.info("No camera selected.")
 

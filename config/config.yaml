@@ -11,7 +11,7 @@ SYSTEM:
 
 SERVER:
   CLOUD:
-    HOST: ['10.252.117.101']
+    HOST: ['10.252.101.243']
     PORT:
       STEREO_L: 5001
       STEREO_R: 5002
@@ -23,7 +23,7 @@ SERVER:
     SEND: True
 
   UNITY:
-    HOST: ['10.252.101.139']
+    HOST: ['10.252.101.240']
     PORT:
       STEREO_L: 5001
       STEREO_R: 5002
@@ -34,24 +34,44 @@ SERVER:
       RGBD: [ 1024, 726 ]
     SEND: False
 
+  FLASK:
+    HOST: ['10.252.101.162']
+    PORT:
+      RGBD: 5000
+    ROUTE:
+      RGB: "/kinect/rgb"
+      DEPTH: "/kinect/depth"
+    SIZE:
+      RGBD: [ 1920, 1080 ]
+    SEND: True
+
 HW_INFO:
   STEREO_L:   # Left Sony camera
     TYPE: sony
     SIZE: [1920, 1080]
-    USE: False
+    USE: True
     FPS: 60
-    SERIAL: "5311372000050"
+    SERIAL: "5311372000254"
     FORMAT: YUYV
 
   STEREO_R:   # Right Sony camera
     TYPE: sony
     SIZE: [1920, 1080]
-    USE: False
+    USE: True
     FPS: 60
-    SERIAL: "5311372000739"
+    SERIAL: "5311372000780"
     FORMAT: YUYV
+
   RGBD:   # Azure Kinect camera
     TYPE: kinect
     SIZE: [2048, 1536]
     USE: True
     FPS: "30"
+
+#  MONO_DEPTH:   # Azure Kinect mono depth estimation
+#    TYPE: kinect
+#    SIZE: [1920, 1080]
+#    USE: False
+#    FPS: "30"
+#    MODEL: intel
+#    WEIGHT: "DPT_Hybrid" #"DPT_Large" #"MiDaS_small"
