@@ -5,7 +5,7 @@ SYSTEM:
     PRINT_PERIOD: 10
 
   SYNC:
-    SERVER: 10.252.101.240
+    SERVER: 10.252.101.139
     RESTART: True
     TOLERANCE: 2
 
@@ -34,22 +34,31 @@ SERVER:
       RGBD: [ 540, 360 ]
     SEND: False
 
+  FLASK:
+    HOST: ['10.252.101.162']
+    PORT:
+      RGBD: 5000
+    ROUTE:
+      RGB: "/kinect/rgb"
+      DEPTH: "/kinect/depth"
+    SIZE:
+      RGBD: [ 1920, 1080 ]
+    SEND: True
+
 HW_INFO:
   STEREO_L:   # Left Sony camera
     TYPE: sony
     SIZE: [1920, 1080]
-    USE: False
+    USE: True
     FPS: 60
-#    SERIAL: "5311372000050"
     SERIAL: "5311372000254"
     FORMAT: YUYV
 
   STEREO_R:   # Right Sony camera
     TYPE: sony
     SIZE: [1920, 1080]
-    USE: False
+    USE: True
     FPS: 60
-#    SERIAL: "5311372000739"
     SERIAL: "5311372000780"
     FORMAT: YUYV
 
@@ -57,13 +66,12 @@ HW_INFO:
     TYPE: kinect
     SIZE: [1920, 1080]
     USE: True
-    FLASK_USE: True
     FPS: "30"
 
-  MONO_DEPTH:   # Azure Kinect mono depth estimation
-    TYPE: kinect
-    SIZE: [1920, 1080]
-    USE: False
-    FPS: "30"
-    MODEL: intel
-    WEIGHT: "DPT_Hybrid" #"DPT_Large" #"MiDaS_small"
+#  MONO_DEPTH:   # Azure Kinect mono depth estimation
+#    TYPE: kinect
+#    SIZE: [1920, 1080]
+#    USE: False
+#    FPS: "30"
+#    MODEL: intel
+#    WEIGHT: "DPT_Hybrid" #"DPT_Large" #"MiDaS_small"
