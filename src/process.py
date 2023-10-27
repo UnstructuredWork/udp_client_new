@@ -70,7 +70,10 @@ def stream_kinect(cfg, meta, side):
         while meta['CONNECT'].value:
             try:
                 _ = r.get_data()
-                intrinsic = (r.intrinsic_color / 2.0).tobytes()
+
+                rate = cfg.HW_INFO.RGBD.SIZE[1] / cfg.SERVER.CLOUD.SIZE.RGBD[1]
+                intrinsic = (r.intrinsic_color / rate).tobytes()
+
                 while True:
                     s = time.time()
                     color, depth = r.get_data()
@@ -82,10 +85,10 @@ def stream_kinect(cfg, meta, side):
                     # max_hole_size = 1
                     # depth = smooth_depth_image(depth, max_hole_size)
 
-                    data['rgb'] = color[:, :, ::-1]
-                    data['depth'] = depth
-                    data['intrinsic'] = intrinsic
-                    data['imu'] = imu
+                    data['rgb'] = cv2.resize(color[:, :, ::-1], dsize=cfg.SERVER.FLASK.SIZE.RGBD)
+                    data['depth'] = cv2.resize(depth, dsize=cfg.SERVER.FLASK.SIZE.RGBD)
+                    # data['intrinsic'] = intrinsic
+                    # data['imu'] = imu
 
                     result = dict()
                     result['rgb'] = color[:, :, ::-1]

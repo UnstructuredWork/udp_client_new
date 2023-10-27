@@ -19,7 +19,7 @@ SERVER:
     SIZE:
       STEREO_L: [ 540, 360 ]
       STEREO_R: [ 540, 360 ]
-      RGBD: [ 1024, 726 ]
+      RGBD: [ 1024, 768 ]
     SEND: True
 
   UNITY:
@@ -27,11 +27,11 @@ SERVER:
     PORT:
       STEREO_L: 5001
       STEREO_R: 5002
-      RGBD: 5003
+#      RGBD: 5003
     SIZE:
       STEREO_L: [ 1920, 1080 ]
       STEREO_R: [ 1920, 1080 ]
-      RGBD: [ 1024, 726 ]
+#      RGBD: [ 1024, 768 ]
     SEND: False
 
   FLASK:
