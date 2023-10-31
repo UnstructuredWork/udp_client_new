@@ -80,6 +80,12 @@ def stream_kinect(cfg, meta, side):
                     imu = r.get_imu()
                     imu = pickle.dumps(imu)
 
+                    result = dict()
+                    result['rgb'] = color[:, :, ::-1]
+                    result['depth'] = depth
+                    result['intrinsic'] = intrinsic
+                    result['imu'] = imu
+                    
                     max_value = 2880
                     depth = ((depth / max_value) * 255).astype('uint8')
                     # max_hole_size = 1
@@ -89,12 +95,6 @@ def stream_kinect(cfg, meta, side):
                     data['depth'] = cv2.resize(depth, dsize=cfg.SERVER.FLASK.SIZE.RGBD)
                     # data['intrinsic'] = intrinsic
                     # data['imu'] = imu
-
-                    result = dict()
-                    result['rgb'] = color[:, :, ::-1]
-                    result['depth'] = depth
-                    result['intrinsic'] = intrinsic
-                    result['imu'] = imu
 
                     e = time.time()
                     cycle = (e - s) * 1000
