@@ -85,9 +85,23 @@ def stream_kinect(cfg, meta, side):
                     result['depth'] = depth
                     result['intrinsic'] = intrinsic
                     result['imu'] = imu
-                    
-                    max_value = 2880
-                    depth = ((depth / max_value) * 255).astype('uint8')
+
+                    multiple = 1.5
+                    max_value = 3000
+                    # sub_value = 500
+                    # depth -= sub_value
+                    # depth[depth > max_value - sub_value] = max_value - sub_value
+                    depth[depth > max_value] = max_value
+                    depth = depth * multiple
+                    depth = depth.astype(np.uint16)
+
+                    depth[depth == 0] = max_value
+                    depth[depth > max_value] = max_value
+                    depth = max_value - depth
+                    depth = (depth / max_value * 255).astype(np.uint8)
+                    # print(np.max(depth))
+                    # print(np.mean(depth))
+                    # depth = ((depth / (max_value)) * 255).astype('uint8')
                     # max_hole_size = 1
                     # depth = smooth_depth_image(depth, max_hole_size)
 
@@ -130,47 +144,47 @@ def stream_flask(cfg, ):
             app.run(host=cfg.SERVER.FLASK.HOST[0], port=cfg.SERVER.FLASK.PORT.RGBD)
 
 
-# def stream_mono_depth(cfg, meta, side):
-#     dep = None
-#
-#     if cfg.HW_INFO.MONO_DEPTH.MODEL == 'intel':
-#         dep = Depth(cfg)
-#     elif cfg.HW_INFO.MONO_DEPTH.MODEL == 'any':
-#         pass
-#
-#     if dep is not None:
-#         logger.info(f"MONO_DEPTH process set to [{cfg.HW_INFO.MONO_DEPTH.MODEL}].")
-#
-#         if dep.ready:
-#             while True:
-#                 while meta['CONNECT'].value:
-#                     try:
-#                         s = time.time()
-#                         rgb = data['rgb']
-#                         if rgb is not None:
-#                             # img = np.zeros(cfg.HW_INFO.MONO_DEPTH.SIZE[::-1] + [3], dtype=np.uint8)
-#                             # img[:, :, :] = rgb[:, :, :]
-#                             # img = cv2.resize(img, dsize=cfg.HW_INFO.MONO_DEPTH.SIZE)
-#
-#                             depth = dep.get(rgb)
-#
-#                             e = time.time()
-#                             cycle = (e - s) * 1000
-#                             cycle = 1000 / cycle
-#
-#                             meta[side]['run'].value = True
-#                             meta[side]['send'].value = True
-#                             meta[side]['fps'].value = cycle
-#
-#                             data['depth_estimation'] = depth
-#
-#                     except Exception as e:
-#                         logger.error(f"Can't open the [{side}] camera: {e}")
-#
-#                 meta[side]['send'].value = False
-#                 meta[side]['fps'].value = 0
-#
-#                 time.sleep(1)
+def stream_mono_depth(cfg, meta, side):
+    dep = None
+
+    if cfg.HW_INFO.MONO_DEPTH.MODEL == 'intel':
+        dep = Depth(cfg)
+    elif cfg.HW_INFO.MONO_DEPTH.MODEL == 'any':
+        pass
+
+    if dep is not None:
+        logger.info(f"MONO_DEPTH process set to [{cfg.HW_INFO.MONO_DEPTH.MODEL}].")
+
+        if dep.ready:
+            while True:
+                while meta['CONNECT'].value:
+                    try:
+                        s = time.time()
+                        rgb = data['rgb']
+                        if rgb is not None:
+                            # img = np.zeros(cfg.HW_INFO.MONO_DEPTH.SIZE[::-1] + [3], dtype=np.uint8)
+                            # img[:, :, :] = rgb[:, :, :]
+                            # img = cv2.resize(img, dsize=cfg.HW_INFO.MONO_DEPTH.SIZE)
+
+                            depth = dep.get(rgb)
+
+                            e = time.time()
+                            cycle = (e - s) * 1000
+                            cycle = 1000 / cycle
+
+                            meta[side]['run'].value = True
+                            meta[side]['send'].value = True
+                            meta[side]['fps'].value = cycle
+
+                            data['depth_estimation'] = depth
+
+                    except Exception as e:
+                        logger.error(f"Can't open the [{side}] camera: {e}")
+
+                meta[side]['send'].value = False
+                meta[side]['fps'].value = 0
+
+                time.sleep(1)
 
 @app.route(config.SERVER.FLASK.ROUTE.RGB)
 def stream_rgb():
@@ -212,8 +226,8 @@ def stream_depth():
             while True:
                 depth = data['depth']
                 if depth is not None:
-                    inverse_depth = (255 - depth).astype('uint8')
-                    encoded_img = cv2.imencode('.jpg', inverse_depth)[1]
+                    # inverse_depth = (255 - depth).astype('uint8')
+                    encoded_img = cv2.imencode('.jpg', depth)[1]
                     frame = encoded_img.tobytes()
 
                 yield (b'--frame\r\n'
@@ -234,36 +248,35 @@ def stream_depth():
 
         print(e)
 
+@app.route(config.SERVER.FLASK.ROUTE.MONO)
+def stream_depth_estimation():
+    def generate():
+        try:
+            print("[INFO] Connected depth estimation streaming URL from remote.")
 
-# @app.route('/mono/depth')
-# def stream_depth_estimation():
-#     def generate():
-#         try:
-#             print("[INFO] Connected depth estimation streaming URL from remote.")
-#
-#             while True:
-#                 depth = data['depth_estimation']
-#                 if depth is not None:
-#                     encoded_img = cv2.imencode('.jpg', depth)[1]
-#                     frame = encoded_img.tobytes()
-#
-#                 yield (b'--frame\r\n'
-#                         b'Content-Type: image/jpeg\r\n'
-#                         b'Content-Length: ' + f"{len(frame)}".encode() + b'\r\n'b'\r\n' + frame + b'\r\n')
-#
-#         except GeneratorExit:
-#             print("[INFO] Disconnected depth estimation streaming URL from remote.")
-#             # streamer.stop()
-#
-#     try:
-#         response = Response(stream_with_context(generate()),
-#                             mimetype='multipart/x-mixed-replace; boundary=frame')
-#
-#         return response
-#
-#     except Exception as e:
-#
-#         print(e)
+            while True:
+                depth = data['depth_estimation']
+                if depth is not None:
+                    encoded_img = cv2.imencode('.jpg', depth)[1]
+                    frame = encoded_img.tobytes()
+
+                yield (b'--frame\r\n'
+                        b'Content-Type: image/jpeg\r\n'
+                        b'Content-Length: ' + f"{len(frame)}".encode() + b'\r\n'b'\r\n' + frame + b'\r\n')
+
+        except GeneratorExit:
+            print("[INFO] Disconnected depth estimation streaming URL from remote.")
+            # streamer.stop()
+
+    try:
+        response = Response(stream_with_context(generate()),
+                            mimetype='multipart/x-mixed-replace; boundary=frame')
+
+        return response
+
+    except Exception as e:
+
+        print(e)
 
 @app.route('/')
 def index():
