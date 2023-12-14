@@ -13,26 +13,16 @@
   ### 1) Make virtual environment & install dependencies :
     $ conda create -n UDP python=3.7
     $ conda activate UDP
-    $ pip install opencv-python==4.6.0.66 opencv-contrib-python==4.6.0.66 numpy pyudev pyyaml ntplib fvcore
-    $ pip install pynvjpeg h5py
-    $ sudo apt-get update
-    $ sudo apt-get install libturbojpeg
-    $ pip install -U git+https://github.com/lilohuang/PyTurboJPEG.git
-    $ sudo apt install k4a-tools
-    $ sudo apt install libk4a1.4
-    $ sudo apt install libk4a1.4-dev
-    $ pip install pyk4a
-
-  ### 2) Download git:
     $ git clone https://github.com/UnstructuredWork/udp_client_new.git
-
-  ### 3) Run
+    $ ./install.sh
+    
+  ### 2) Run
     $ python main.py
  
-  ### 4) Synchronize time
+  ### 3) Synchronize time
   ##### [doc/time_synchronization.pptx](doc/time_synchronization.pptx)
 
-  ### 5) Check time synchronization
+  ### 4) Check time synchronization
     > python test/sync.py
     ------------------------
       NTP Server Time과 Local Time과 차이는 -1.36 ms입니다.
