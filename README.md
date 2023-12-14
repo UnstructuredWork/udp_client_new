@@ -8,7 +8,7 @@
 ## 2. Use
 
   ### 0) Install Azure Kinect Camera SDK
-  Reference: https://gist.github.com/madelinegannon/c212dbf24fc42c1f36776342754d81bc
+  [Reference](https://gist.github.com/madelinegannon/c212dbf24fc42c1f36776342754d81bc)
 
   ### 1) Make virtual environment & install dependencies :
     $ conda create -n UDP python=3.7
@@ -17,11 +17,11 @@
     $ ./install.sh
 
   ### 2) Synchronize time
-  ##### [doc/time_synchronization.pptx](doc/time_synchronization.pptx)
+  ##### [Document](doc/time_synchronization.pptx)
     $ sudo python test/linux_chrony.py -ch -i {IP} -r -b
     
   ### 3) Check time synchronization
-    > python test/sync.py
+    $ python test/sync.py
     ------------------------
       NTP Server Time과 Local Time과 차이는 -1.36 ms입니다.
       NTP Server Time과 Local Time과 차이는 -1.45 ms입니다.
@@ -29,7 +29,7 @@
       NTP Server Time과 Local Time과 차이는 -1.40 ms입니다.
       NTP Server Time과 Local Time과 차이는 -1.37 ms입니다.
     
-    > chronyc sources -v
+    $ chronyc sources -v
     ------------------------
     210 Number of sources = 1
     
