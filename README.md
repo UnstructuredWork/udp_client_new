@@ -15,14 +15,12 @@
     $ conda activate UDP
     $ git clone https://github.com/UnstructuredWork/udp_client_new.git
     $ ./install.sh
-    
-  ### 2) Run
-    $ python main.py
- 
-  ### 3) Synchronize time
-  ##### [doc/time_synchronization.pptx](doc/time_synchronization.pptx)
 
-  ### 4) Check time synchronization
+  ### 2) Synchronize time
+  ##### [doc/time_synchronization.pptx](doc/time_synchronization.pptx)
+    $ sudo python test/linux_chrony.py -ch -i {IP} -r -b
+    
+  ### 3) Check time synchronization
     > python test/sync.py
     ------------------------
       NTP Server Time과 Local Time과 차이는 -1.36 ms입니다.
@@ -46,3 +44,6 @@
     MS Name/IP address         Stratum Poll Reach LastRx Last sample               
     ===============================================================================
     ^* 10.252.101.174                4  10     0   66h    +18us[  +16us] +/- 8647ms
+
+  ### 4) Run
+    $ python main.py
